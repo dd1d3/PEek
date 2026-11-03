@@ -41,7 +41,7 @@ Compiler and packer signatures are derived from Detect It Easy (DIE) scripts and
 
 https://github.com/horsicq/detect-it-easy
 
-https://github.com/hasherezade/pe-bear
+https://github.com/hasherezade/pe-bear/blob/main/SIG.txt
 
 ## Project status
  
