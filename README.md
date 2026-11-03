@@ -5,11 +5,9 @@
  
 PEek is a PE file analysis tool for Windows, written in C++ with a Dear ImGui interface on DirectX 11.
 
+The program inspects Windows PE binaries and identifies the compiler, the packer or protector
 
 <img width="1108" height="582" alt="logo" src="https://github.com/user-attachments/assets/528460d0-417f-470e-a8c7-92de5145fb67" />
-
-
-The program inspects Windows PE binaries and identifies the compiler, the packer or protector
 
 ## Features
 - Compiler detection: MSVC, GCC, Go, Rust, Delphi, Clang
