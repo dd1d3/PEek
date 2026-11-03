@@ -1,0 +1,200 @@
+#include "dotnetdetect.h"
+#include <algorithm>
+#include <Windows.h>
+#include "signature_scanner.h"
+
+namespace CompilerThresholds
+{
+    constexpr float Rust = 20.0f;
+    constexpr float Go = 25.0f;
+    constexpr float Delphi = 20.0f;
+    constexpr float GCC = 20.0f;
+    constexpr float MSVC = 20.0f;
+	constexpr float FreeBASIC = 20.0f;
+	constexpr float Pelles_C = 20.0f;
+	constexpr float PureBasic = 20.0f;
+	constexpr float BorlandCpp = 20.0f;
+}
+
+void DetectCompiler(LPVOID bufferp, IMAGE_NT_HEADERS* nt, PEResult& result)
+{
+
+    if (result.dotNetInfo)
+        return;
+
+    auto hasimport = [&](const std::string& pattern) {
+        return std::any_of(result.imports.begin(), result.imports.end(),
+            [&](const std::string& imp) {
+                return imp.find(pattern) != std::string::npos;
+            });
+        };
+
+    auto hasstring = [&](const std::string& pattern) {
+        return std::any_of(result.foundStrings.begin(), result.foundStrings.end(),
+            [&](const std::string& s) {
+                return s.find(pattern) != std::string::npos;
+            });
+        };
+
+    auto hassection = [&](const std::string& name) {
+        return std::any_of(result.sections.begin(), result.sections.end(),
+            [&](const std::string& s) {
+                return s == name;
+            });
+        };
+
+
+    float Rustscore = 0;
+    if (hasstring("Local\\RustBacktraceMutex")) Rustscore += 30;
+    if (hasstring("__rust_begin_unwind")) Rustscore += 10;
+    if (hasstring(".rlib")) Rustscore += 10;
+    if (hasstring("/rust")) Rustscore += 15;
+    if (hasstring(".cargo/registry")) Rustscore += 10;
+    if (hasstring("panic_unwind")) Rustscore += 10;
+    if (hasstring("__rust_start_panic")) Rustscore += 10;
+    //checkTLS
+    if (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
+        IMAGE_OPTIONAL_HEADER64* opt64 = (IMAGE_OPTIONAL_HEADER64*)&nt->OptionalHeader;
+
+		if (opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress != 0 && opt64->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size != 0) {
+			Rustscore += 5;
+		}
+    }
+
+	if (nt->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC) {
+		IMAGE_OPTIONAL_HEADER32* opt32 = (IMAGE_OPTIONAL_HEADER32*)&nt->OptionalHeader;
+
+		if (opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].VirtualAddress != 0 && opt32->DataDirectory[IMAGE_DIRECTORY_ENTRY_TLS].Size != 0) {
+			Rustscore += 5;
+		}
+	}
+
+    if (Rustscore >= CompilerThresholds::Rust)
+        result.compilerHits.push_back({ "Rust", Rustscore });
+
+    float goScore = 0;
+    short goPattern_1_7_1_9[] = { 0x48, 0x8d, 0x74, 0x24, 0x08, 0x48, 0x8b, 0x3c, 0x24, 0x48, 0x8d, 0x05, 0x10, 0x00, 0x00, 0x00, 0xff, 0xe0, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc };
+    short goPattern_1_18_1_24_a[] = { 0xe9, -1, -1, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x83, 0xec, 0x28, 0x89, 0x5c, 0x24, 0x1c, 0x89, 0x6c, 0x24, 0x10, 0x89, 0x74, 0x24, 0x14, 0x89, 0x7c, 0x24, 0x18, 0x89, 0x04, 0x24, 0x89, 0x4c, 0x24, 0x04, 0xe8 };
+    short goPattern_1_18_1_24_b[] = { 0xe9, -1, -1, -1, -1, 0x48, 0x8b, 0x3c, 0x24, 0x48, 0x8d, 0x74, 0x24, 0x08, 0xe9, -1, -1, -1, -1, 0x48, 0x89, 0xf8, 0x48, 0x89, 0xf3, 0x48, 0x83, 0xec, 0x28, 0x48, 0x83, 0xe4, 0xf0 };
+    short goPattern_1_14[] = { 0xe9, 0xcb, 0xd8, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0x8b, 0x5c, 0x24, 0x04, 0x64, 0xc7, 0x05, 0x34, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x89 };
+
+	if (signaturefinder(nt, bufferp, goPattern_1_7_1_9, sizeof(goPattern_1_7_1_9) / sizeof(short))) goScore += 50;
+	if (signaturefinder(nt, bufferp, goPattern_1_18_1_24_a, sizeof(goPattern_1_18_1_24_a) / sizeof(short))) goScore += 50;
+	if (signaturefinder(nt, bufferp, goPattern_1_18_1_24_b, sizeof(goPattern_1_18_1_24_b) / sizeof(short))) goScore += 50;
+	if (signaturefinder(nt, bufferp, goPattern_1_14, sizeof(goPattern_1_14) / sizeof(short))) goScore += 50;
+    if (hasstring("runtime."))             goScore += 35;
+    if (hassection(".symtab"))             goScore += 30;
+    if (hasstring("panic: runtime error")) goScore += 25;
+    if (hasstring("Go build ID: ")) goScore += 30;
+
+
+    if (goScore >= CompilerThresholds::Go)
+        result.compilerHits.push_back({ "Go", goScore });
+
+    float delphiScore = 0;
+    if (hasimport("BORLNDMM"))  delphiScore += 40;
+    if (hassection("CODE"))     delphiScore += 10;
+    if (hasstring("TObject"))   delphiScore += 10;
+    if (hasstring("SysUtils"))  delphiScore += 10;
+    if (hasstring("Delphi"))    delphiScore += 30;
+    if (hasstring("Embarcadero Delphi for Win")) delphiScore += 40;
+    if (hassection(".text0"))   delphiScore += 5;
+
+    if (delphiScore >= CompilerThresholds::Delphi)
+        result.compilerHits.push_back({ "Delphi", delphiScore });
+
+    float gccScore = 0;
+    short gccPattern_mingw3[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0xC7, 0x04, 0x24, -1, 0x00, 0x00, 0x00, 0xFF, 0x15, -1, -1, -1, -1, 0xE8, -1, -1, 0xFF, 0xFF, -1, -1, -1, -1, -1, -1, -1, -1, 0x55 };
+    short gccPattern_cygwin[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x04, 0x83, 0x3D };
+    short watcomPattern_dll[] = { 0x53, 0x56, 0x57, 0x55, 0x8B, 0x74, 0x24, 0x14, 0x8B, 0x7C, 0x24, 0x18, 0x8B, 0x6C, 0x24, 0x1C, 0x83, 0xFF, 0x03, 0x0F, 0x87, 0x01, 0x00, 0x00, 0x00, 0xF1 };
+    short lccPattern[] = { 0x64, 0xA1, 0x01, 0x00, 0x00, 0x00, 0x55, 0x89, 0xE5, 0x6A, 0xFF, 0x68, -1, -1, -1, -1, 0x68, 0x9A, 0x10, 0x40, 0x90, 0x50, 0xE9 };
+    short devcppPattern[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0xC7, 0x04, 0x24, 0x01, 0x00, 0x00, 0x00, 0xFF, 0x15, -1, -1, -1, 0x00, 0xE8, 0xC8, 0xFE, 0xFF, 0xFF, 0x90, 0x8D, 0xB4, 0x26, 0x00, 0x00, 0x00, 0x00, 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0xC7, 0x04, 0x24, 0x02, 0x00, 0x00, 0x00, 0xFF, 0x15, -1, -1, -1, 0x00, 0xE8, 0xA8, 0xFE, 0xFF, 0xFF, 0x90, 0x8D, 0xB4, 0x26, 0x00, 0x00, 0x00, 0x00, 0x55, 0x8B, 0x0D, -1, -1, -1, 0x00, 0x89, 0xE5, 0x5D, 0xFF, 0xE1, 0x8D, 0x74, 0x26, 0x00, 0x55, 0x8B, 0x0D };
+
+	if (signaturefinder(nt, bufferp, gccPattern_mingw3, sizeof(gccPattern_mingw3) / sizeof(short))) gccScore += 50;
+    if (signaturefinder(nt, bufferp, gccPattern_cygwin, sizeof(gccPattern_cygwin) / sizeof(short))) gccScore += 50;
+	if (signaturefinder(nt, bufferp, watcomPattern_dll, sizeof(watcomPattern_dll) / sizeof(short))) gccScore += 50;
+	if (signaturefinder(nt, bufferp, lccPattern, sizeof(lccPattern) / sizeof(short))) gccScore += 50;
+	if (signaturefinder(nt, bufferp, devcppPattern, sizeof(devcppPattern) / sizeof(short))) gccScore += 50;
+    if (hasstring("GCC:"))         gccScore += 40;
+    if (hasstring("libgcc"))       gccScore += 30;
+    if (hasstring("mingwm10.dll")) gccScore += 20;
+    if (hasimport("msvcrt"))       gccScore += 20;
+
+    if (gccScore >= CompilerThresholds::GCC)
+        result.compilerHits.push_back({ "GCC", gccScore });
+
+    float msvcScore = 0;
+    short msvcPattern[] = { 0x8b, 0xff, 0x55, 0x8b, 0xec, 0x83, 0x7d, -1, 0x75, -1, 0xe8 };
+    short msvcPattern2[] = { 0xe8, -1, -1, -1, -1,0x55, 0x8b, 0xec, 0x83, 0xec, -1, 0x83, 0x65, -1, -1, 0x83, 0x65, -1, -1, 0xa1, -1, -1, -1, -1,0x56, 0x57, 0xbf, -1, -1, -1, -1, 0xbe, -1, -1, -1, -1, 0x3b, 0xc7 };
+    short msvcPattern3[] = {  0x55, 0x8b, 0xec, 0x8b, 0x45, -1, 0x83, 0xf8, -1,0x56, 0x57, 0x0f, 0x84, -1, -1, -1, -1, 0x33, 0xff, 0x3b, 0xc7 };
+    short msvcPattern4[] = {  0x55, 0x8b, 0xec, 0x6a, -1,0x68, -1, -1, -1, -1, 0x68, -1, -1, -1, -1, 0x64, 0xa1, 0x00, 0x00, 0x00, 0x00, 0x50, 0x64, 0x89, 0x25, 0x00, 0x00, 0x00, 0x00, 0x83, 0xc4, -1,0x53, 0x56, 0x57};
+    short msvcPattern5[] = { 0x55, 0x8b, 0xec, 0x83, 0x7d, -1, -1, 0x75, -1, 0xe8, -1, -1, -1, -1, 0x55, 0x8b, 0xec, 0x83, 0xec, -1, 0xa1, -1, -1, -1, -1, 0x83, 0x65, -1, -1, 0x83, 0x65, -1, -1, 0x56, 0x57, 0xbf, -1, -1, -1, -1, 0xbe, -1, -1, -1, -1, 0x3b, 0xc7 };
+    short msvcPattern6[] = { 0x8b, 0xff, 0x55, 0x8b, 0xec, 0x83, 0x7d, -1, -1, 0x75, -1, 0xe8, -1, -1, -1, -1, 0x8b, 0xff, 0x55, 0x8b, 0xec, 0x83, 0xec, -1, 0xa1, -1, -1, -1, -1, 0x83, 0x65, -1, -1, 0x83, 0x65, -1, -1, 0x57, 0xbf, -1, -1, -1, -1, 0x3b, 0xc7 };
+    short msvcPattern7[] = { 0xe8, -1, -1, -1, -1, 0x8b, 0xff, 0x55, 0x8b, 0xec, 0x83, 0xec, -1, 0x83, 0x65, -1, -1, 0x83, 0x65, -1, -1, 0xa1, -1, -1, -1, -1, 0x56, 0x57, 0xbf, -1, -1, -1, -1, 0xbe, -1, -1, -1, -1, 0x3b, 0xc7 };
+    short msvcPattern8[] = { 0x6a, -1, 0x68, -1, -1, -1, -1, 0xe8, -1, -1, -1, -1, 0x33, 0xc0, 0x40, 0x89, 0x45, -1, 0x8b, 0x75, -1, 0x33, 0xff };
+    short msvcPattern9[] = { 0x8b, 0x44, 0x24, -1, 0x53, 0x83, 0xf8, -1, 0x56, 0x74, -1, 0x33, 0xc9, 0x3b, 0xc1, 0x0f, 0x84, -1, -1, -1, -1, 0x83, 0xf8, -1, 0x0f, 0x84, -1, -1, -1, -1, 0x6a, -1, 0x58, 0x5e, 0x5b };
+
+	if (signaturefinder(nt, bufferp, msvcPattern, sizeof(msvcPattern) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern2, sizeof(msvcPattern2) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern3, sizeof(msvcPattern3) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern4, sizeof(msvcPattern4) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern5, sizeof(msvcPattern5) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern6, sizeof(msvcPattern6) / sizeof(short))) msvcScore += 30;  
+	if (signaturefinder(nt, bufferp, msvcPattern7, sizeof(msvcPattern7) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern8, sizeof(msvcPattern8) / sizeof(short))) msvcScore += 30;
+	if (signaturefinder(nt, bufferp, msvcPattern9, sizeof(msvcPattern9) / sizeof(short))) msvcScore += 30;
+
+    if (hasimport("VCRUNTIME"))          msvcScore += 50;
+    if (hassection(".CRT"))              msvcScore += 20;
+    if (hasimport("MSVCP"))              msvcScore += 10;
+    if (hasstring("MSVC"))               msvcScore += 10;
+    if (hasstring("_CxxThrowException")) msvcScore += 10;
+
+    if (msvcScore >= CompilerThresholds::MSVC)
+        result.compilerHits.push_back({ "MSVC", msvcScore });
+
+
+	float freebasicScore = 0;
+
+    short freebasicPattern[] = { 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0xC7, 0x04, 0x24, 0x01, 0x00, 0x00, 0x00, 0xFF, 0x15, -1, -1, -1, 0x00, 0xE8, 0x88, 0xFF, 0xFF, 0xFF, 0x89, 0xEC, 0x31, 0xC0, 0x5D, 0xC3, 0x89, 0xF6, 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0xC7, 0x04, 0x24, 0x02, 0x00, 0x00, 0x00, 0xFF, 0x15, -1, -1, -1, 0x00, 0xE8, 0x68, 0xFF, 0xFF, 0xFF, 0x89, 0xEC, 0x31, 0xC0, 0x5D, 0xC3, 0x89, 0xF6, 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0x8B, 0x45, 0x08, 0x89, 0x04, 0x24, 0xFF, 0x15, -1, -1, -1, 0x00, 0x89, 0xEC, 0x5D, 0xC3, 0x8D, 0x76, 0x00, 0x8D, 0xBC, 0x27, 0x00, 0x00, 0x00, 0x00, 0x55, 0x89, 0xE5, 0x83, 0xEC, 0x08, 0x8B, 0x45, 0x08, 0x89, 0x04, 0x24, 0xFF, 0x15, -1, -1, -1, 0x00, 0x89, 0xEC, 0x5D, 0xC3, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
+
+	if (signaturefinder(nt, bufferp, freebasicPattern, sizeof(freebasicPattern) / sizeof(short))) freebasicScore += 50;
+
+	if (freebasicScore >= CompilerThresholds::FreeBASIC)
+		result.compilerHits.push_back({ "FreeBASIC", freebasicScore });
+
+	float pellesCScore = 0;
+
+    short pellescPattern[] = { 0x55, 0x89, 0xE5, 0x6A, 0xFF, 0x68, -1, -1, -1, -1, 0x68, -1, -1, -1, -1, 0x64, 0xFF, 0x35, -1, -1, -1, -1, 0x64, 0x89, 0x25, -1, -1, -1, -1, 0x83, 0xEC };
+	if (signaturefinder(nt, bufferp, pellescPattern, sizeof(pellescPattern) / sizeof(short))) pellesCScore += 50;
+
+	if (pellesCScore >= CompilerThresholds::Pelles_C)
+		result.compilerHits.push_back({ "Pelles C", pellesCScore });
+
+	float pureBasicScore = 0;
+
+    short purebasicPattern[] = { 0x68, -1, -1, 0x00, 0x00, 0x68, 0x00, 0x00, 0x00, 0x00, 0x68, -1, -1, -1, 0x00, 0xE8, -1, -1, -1, 0x00, 0x83, 0xC4, 0x0C, 0x68, 0x00, 0x00, 0x00, 0x00, 0xE8, -1, -1, -1, 0x00, 0xA3, -1, -1, -1, 0x00, 0x68, 0x00, 0x00, 0x00, 0x00, 0x68, 0x00, 0x10, 0x00, 0x00, 0x68, 0x00, 0x00, 0x00, 0x00, 0xE8, -1, -1, -1, 0x00, 0xA3 };
+    
+	if (signaturefinder(nt, bufferp, purebasicPattern, sizeof(purebasicPattern) / sizeof(short))) pureBasicScore += 50;
+
+	if (pureBasicScore >= CompilerThresholds::PureBasic)
+		result.compilerHits.push_back({ "PureBasic", pureBasicScore });
+
+
+	float borlandcppScore = 0;
+
+    short borlandcppPattern[] = { 0xEB, 0x10, 0x66, 0x62, 0x3A, 0x43, 0x2B, 0x2B, 0x48, 0x4F, 0x4F, 0x4B, 0x90, 0xE9, 0x90, 0x90, 0x90, 0x90, 0xA1, -1, -1, -1, -1, 0xA3 };
+
+	if (signaturefinder(nt, bufferp, borlandcppPattern, sizeof(borlandcppPattern) / sizeof(short))) borlandcppScore += 50;
+	if (borlandcppScore >= CompilerThresholds::BorlandCpp)
+		result.compilerHits.push_back({ "Borland C++", borlandcppScore });
+
+    if (result.compilerHits.empty())
+        result.compilerHits.push_back({ "Unknown", 0 });
+
+
+    std::sort(result.compilerHits.begin(), result.compilerHits.end(),
+        [](const CompilerHit& a, const CompilerHit& b) {
+            return a.score > b.score;
+        });
+}

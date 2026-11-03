@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{7603fff9-e9b9-4e60-b35b-0175bb44ff34}</ProjectGuid>
+    <RootNamespace>PEek</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)imguidepend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>bcrypt.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)imguidepend;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>bcrypt.lib;d3d11.lib;dxgi.lib;capstone.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)external\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(ProjectDir)external\dll\capstone.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="dotnetdetect.cpp" />
+    <ClCompile Include="F10sha1.cpp" />
+    <ClCompile Include="imguidepend\imgui.cpp" />
+    <ClCompile Include="imguidepend\imgui_draw.cpp" />
+    <ClCompile Include="imguidepend\imgui_impl_dx11.cpp" />
+    <ClCompile Include="imguidepend\imgui_impl_win32.cpp" />
+    <ClCompile Include="imguidepend\imgui_tables.cpp" />
+    <ClCompile Include="imguidepend\imgui_widgets.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="f1mainmodule.cpp" />
+    <ClCompile Include="f2hashmd5.cpp" />
+    <ClCompile Include="f3hashsha256.cpp" />
+    <ClCompile Include="f4enthropy.cpp" />
+    <ClCompile Include="f5strings.cpp" />
+    <ClCompile Include="f6imports.cpp" />
+    <ClCompile Include="f7section.cpp" />
+    <ClCompile Include="f8compilerdetect.cpp" />
+    <ClCompile Include="f9packer.cpp" />
+    <ClCompile Include="signature_scanner.cpp" />
+    <ClCompile Include="svgtexture.cpp" />
+    <ClCompile Include="timedatestampcheck.cpp" />
+    <ClCompile Include="uicore.cpp" />
+    <ClCompile Include="themecore.cpp" />
+    <ClCompile Include="tlhelp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="capstone\arm.h" />
+    <ClInclude Include="capstone\arm64.h" />
+    <ClInclude Include="capstone\bpf.h" />
+    <ClInclude Include="capstone\capstone.h" />
+    <ClInclude Include="capstone\evm.h" />
+    <ClInclude Include="capstone\m680x.h" />
+    <ClInclude Include="capstone\m68k.h" />
+    <ClInclude Include="capstone\mips.h" />
+    <ClInclude Include="capstone\mos65xx.h" />
+    <ClInclude Include="capstone\platform.h" />
+    <ClInclude Include="capstone\ppc.h" />
+    <ClInclude Include="capstone\riscv.h" />
+    <ClInclude Include="capstone\sh.h" />
+    <ClInclude Include="capstone\sparc.h" />
+    <ClInclude Include="capstone\systemz.h" />
+    <ClInclude Include="capstone\tms320c64x.h" />
+    <ClInclude Include="capstone\tricore.h" />
+    <ClInclude Include="capstone\wasm.h" />
+    <ClInclude Include="capstone\x86.h" />
+    <ClInclude Include="capstone\xcore.h" />
+    <ClInclude Include="dotnetdetect.h" />
+    <ClInclude Include="F10sha1.h" />
+    <ClInclude Include="f2hashmd5.h" />
+    <ClInclude Include="f3hashsha256.h" />
+    <ClInclude Include="f4enthropy.h" />
+    <ClInclude Include="f5strings.h" />
+    <ClInclude Include="f6imports.h" />
+    <ClInclude Include="f7section.h" />
+    <ClInclude Include="f8compilerdetect.h" />
+    <ClInclude Include="f9packer.h" />
+    <ClInclude Include="logo_globals.h" />
+    <ClInclude Include="signature_scanner.h" />
+    <ClInclude Include="svgtexture.h" />
+    <ClInclude Include="timedatestampcheck.h" />
+    <ClInclude Include="uicore.h" />
+    <ClInclude Include="themecore.h" />
+    <ClInclude Include="imguidepend\imconfig.h" />
+    <ClInclude Include="imguidepend\imgui.h" />
+    <ClInclude Include="imguidepend\imgui_impl_dx11.h" />
+    <ClInclude Include="imguidepend\imgui_impl_win32.h" />
+    <ClInclude Include="imguidepend\imgui_internal.h" />
+    <ClInclude Include="imguidepend\imstb_rectpack.h" />
+    <ClInclude Include="imguidepend\imstb_textedit.h" />
+    <ClInclude Include="imguidepend\imstb_truetype.h" />
+    <ClInclude Include="tlhelp.h" />
+    <ClInclude Include="f1mainmodule.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="external\dll\capstone.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="external\lib\capstone.lib" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

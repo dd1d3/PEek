@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="PEek/PEek.vcxproj" Id="7603fff9-e9b9-4e60-b35b-0175bb44ff34" />
+</Solution>
