@@ -61,4 +61,4 @@ Detection accuracy can be improved and the number of false positives reduced.
  
 ## License
  
-See `LICENSE`.
+See [LICENSE](https://github.com/dd1d3/PEek/blob/main/LICENSE).
