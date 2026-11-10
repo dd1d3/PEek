@@ -10,11 +10,15 @@ The program inspects Windows PE binaries and identifies the compiler, the packer
 <img width="1108" height="582" alt="logo" src="https://github.com/user-attachments/assets/528460d0-417f-470e-a8c7-92de5145fb67" />
 
 ## Features
-- Compiler detection: MSVC, GCC, Go, Rust, Delphi, Clang
-- Packer and protector detection: UPX, Enigma, Themida, VMProtect, ASPack, PECompact, FSG
-- Signature matching with wildcard byte patterns
-- .NET detection through the COM descriptor directory
-- Compile timestamp parsing with a heuristic for stale or forged `TimeDateStamp` values
+Compiler detection: MSVC, GCC, Go, Rust, Delphi, Clang
+
+Packer and protector detection
+
+Signature matching with wildcard byte patterns
+
+.NET detection through the COM descriptor directory
+
+Compile timestamp parsing with a heuristic for stale or forged `TimeDateStamp` values
 
 ## Building
 PEek targets Windows
